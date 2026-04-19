@@ -1,6 +1,7 @@
 CREATE DATABASE Textile_mis;
 USE Textile_mis;
 
+-- TABLES
 -- Suppliers table
 CREATE TABLE suppliers (
 	supplier_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -333,3 +334,261 @@ SELECT
 FROM sales
 GROUP BY MONTH(sale_date), MONTHNAME(sale_date)
 ORDER BY month_num;
+
+ -- Total monthly revenue
+ SELECT 
+    MONTH(sale_date)     AS month_num,
+    MONTHNAME(sale_date) AS month_name,
+    COUNT(*)             AS total_transactions,
+    SUM(quantity_sold)   AS total_units_sold,
+    SUM(total_amount)    AS total_revenue
+FROM sales
+GROUP BY MONTH(sale_date), MONTHNAME(sale_date)
+ORDER BY month_num;
+
+-- Seasonal comparison (festival vs normal)
+SELECT 
+	CASE
+		WHEN MONTH(sale_date) IN (3, 4)		THEN 'Eid ul-Fitr Peak'
+        WHEN MONTH(sale_date) IN (6)		THEN 'Eid ul-Adha Peak'
+        WHEN MONTH(sale_date) IN (7, 8)		THEN 'Summer Slowdon'
+        WHEN MONTH(sale_date) IN (11, 12)	THEN 'Winter Peak'
+        ELSE 'Normal Season'
+	END AS season,
+    COUNT(*)					AS total_transactions,
+    SUM(quantity_sold)			AS total_units_sold,
+    ROUND(SUM(total_amount), 2)	AS total_revenue,
+    ROUND(AVG(total_amount), 2)	AS avg_sale_value
+FROM sales
+GROUP BY season
+ORDER BY total_revenue DESC;
+
+-- Low stock alert
+SELECT 
+    p.product_name,
+    p.category,
+    p.unit,
+    i.stock_quantity        AS current_stock,
+    p.reorder_level         AS minimum_required,
+    (p.reorder_level - i.stock_quantity) AS shortage_quantity,
+    i.warehouse_location
+FROM inventory i
+JOIN products p ON i.product_id = p.product_id
+WHERE i.stock_quantity < p.reorder_level
+ORDER BY shortage_quantity DESC;
+
+-- Top selling products
+SELECT 
+    p.product_name,
+    p.category,
+    p.unit,
+    COUNT(s.sale_id)            AS total_orders,
+    SUM(s.quantity_sold)        AS total_units_sold,
+    ROUND(SUM(s.total_amount), 2) AS total_revenue,
+    ROUND(AVG(s.total_amount), 2) AS avg_order_value
+FROM sales s
+JOIN products p ON s.product_id = p.product_id
+GROUP BY p.product_id, p.product_name, p.category, p.unit
+ORDER BY total_revenue DESC;
+
+-- Top buyers
+SELECT 
+    buyer_name,
+    COUNT(*)                      AS total_orders,
+    SUM(quantity_sold)            AS total_units_bought,
+    ROUND(SUM(total_amount), 2)   AS total_spent,
+    ROUND(AVG(total_amount), 2)   AS avg_order_value,
+    MIN(sale_date)                AS first_purchase,
+    MAX(sale_date)                AS last_purchase
+FROM sales
+GROUP BY buyer_name
+ORDER BY total_spent DESC;
+
+-- Category-wise revenue breakdown
+SELECT 
+    p.category,
+    COUNT(s.sale_id)              AS total_orders,
+    SUM(s.quantity_sold)          AS total_units_sold,
+    ROUND(SUM(s.total_amount), 2) AS total_revenue,
+    ROUND(SUM(s.total_amount) * 100.0 / 
+        (SELECT SUM(total_amount) FROM sales), 2) AS revenue_percentage
+FROM sales s
+JOIN products p ON s.product_id = p.product_id
+GROUP BY p.category
+ORDER BY total_revenue DESC;
+
+--  Inventory value report
+SELECT 
+    p.product_name,
+    p.category,
+    i.stock_quantity,
+    p.unit_price,
+    ROUND(i.stock_quantity * p.unit_price, 2) AS stock_value,
+    i.warehouse_location
+FROM inventory i
+JOIN products p ON i.product_id = p.product_id
+ORDER BY stock_value DESC;
+
+-- Summary total at the bottom
+SELECT 
+    ROUND(SUM(i.stock_quantity * p.unit_price), 2) AS total_inventory_value
+FROM inventory i
+JOIN products p ON i.product_id = p.product_id;
+
+-- Query 1 — Month-over-month growth rate
+WITH monthly_revenue AS (
+    SELECT 
+        MONTH(sale_date)        AS month_num,
+        MONTHNAME(sale_date)    AS month_name,
+        ROUND(SUM(total_amount), 2) AS revenue
+    FROM sales
+    GROUP BY MONTH(sale_date), MONTHNAME(sale_date)
+)
+SELECT 
+    curr.month_name,
+    curr.revenue                                        AS current_revenue,
+    prev.revenue                                        AS previous_revenue,
+    ROUND(curr.revenue - prev.revenue, 2)               AS absolute_change,
+    ROUND((curr.revenue - prev.revenue) / prev.revenue * 100, 2) AS growth_pct
+FROM monthly_revenue curr
+LEFT JOIN monthly_revenue prev ON curr.month_num = prev.month_num + 1
+ORDER BY curr.month_num;
+
+-- Query 2 — Slow-moving items (no sales in 30 days)
+SELECT 
+    p.product_name,
+    p.category,
+    i.stock_quantity,
+    i.warehouse_location,
+    MAX(s.sale_date)        AS last_sale_date,
+    DATEDIFF(CURDATE(), MAX(s.sale_date)) AS days_since_last_sale,
+    ROUND(i.stock_quantity * p.unit_price, 2) AS stock_value_at_risk
+FROM products p
+LEFT JOIN inventory i ON p.product_id = i.product_id
+LEFT JOIN sales s     ON p.product_id = s.product_id
+GROUP BY p.product_id, p.product_name, p.category, 
+         i.stock_quantity, i.warehouse_location, p.unit_price
+HAVING days_since_last_sale > 30 
+    OR last_sale_date IS NULL
+ORDER BY days_since_last_sale DESC;
+
+-- Query 3 — Supplier-wise inventory reconciliation
+SELECT 
+    sup.supplier_name,
+    sup.city,
+    p.product_name,
+    p.category,
+    i.stock_quantity            AS current_stock,
+    p.reorder_level             AS min_required,
+    CASE 
+        WHEN i.stock_quantity >= p.reorder_level THEN 'OK'
+        WHEN i.stock_quantity < p.reorder_level  THEN 'REORDER NOW'
+    END AS stock_status,
+    COALESCE(sold.total_sold, 0) AS total_units_sold_ytd,
+    sup.contact_person,
+    sup.phone
+FROM suppliers sup
+JOIN products  p   ON sup.supplier_id = p.supplier_id
+JOIN inventory i   ON p.product_id    = i.product_id
+LEFT JOIN (
+    SELECT product_id, SUM(quantity_sold) AS total_sold
+    FROM sales
+    GROUP BY product_id
+) sold ON p.product_id = sold.product_id
+ORDER BY sup.supplier_name, stock_status DESC;
+
+-- Query 4 — Top buyer per month (who bought most each month)
+WITH monthly_buyer AS (
+    SELECT 
+        MONTHNAME(sale_date)          AS month_name,
+        MONTH(sale_date)              AS month_num,
+        buyer_name,
+        ROUND(SUM(total_amount), 2)   AS total_spent
+    FROM sales
+    GROUP BY MONTH(sale_date), MONTHNAME(sale_date), buyer_name
+)
+SELECT 
+    mb.month_name,
+    mb.buyer_name           AS top_buyer,
+    mb.total_spent          AS highest_spend
+FROM monthly_buyer mb
+JOIN (
+    SELECT month_num, MAX(total_spent) AS max_spent
+    FROM monthly_buyer
+    GROUP BY month_num
+) top ON mb.month_num = top.month_num 
+      AND mb.total_spent = top.max_spent
+ORDER BY mb.month_num;
+
+-- Query 5 — Festival season vs normal season deep comparison
+SELECT 
+    CASE 
+        WHEN MONTH(sale_date) IN (3, 4)  THEN '1 - Eid ul-Fitr Peak'
+        WHEN MONTH(sale_date) = 6        THEN '2 - Eid ul-Adha Peak'
+        WHEN MONTH(sale_date) IN (7, 8)  THEN '4 - Summer Slowdown'
+        WHEN MONTH(sale_date) IN (11,12) THEN '3 - Winter Peak'
+        ELSE                                  '5 - Normal Season'
+    END                                   AS season,
+    COUNT(DISTINCT MONTH(sale_date))      AS months_covered,
+    COUNT(*)                              AS total_transactions,
+    SUM(quantity_sold)                    AS total_units,
+    ROUND(SUM(total_amount), 2)           AS total_revenue,
+    ROUND(AVG(total_amount), 2)           AS avg_transaction_value,
+    ROUND(SUM(total_amount) / 
+          COUNT(DISTINCT MONTH(sale_date)), 2) AS avg_monthly_revenue,
+    COUNT(DISTINCT buyer_name)            AS unique_buyers_active
+FROM sales
+GROUP BY season
+ORDER BY season;
+
+-- Query 6 — Product performance scorecard (the most interview-worthy query)
+SELECT 
+    p.product_name,
+    p.category,
+    p.unit,
+    ROUND(SUM(s.total_amount), 2)       AS total_revenue,
+    SUM(s.quantity_sold)                AS total_sold,
+    COUNT(s.sale_id)                    AS total_orders,
+    RANK() OVER (
+        ORDER BY SUM(s.total_amount) DESC
+    )                                   AS revenue_rank,
+    i.stock_quantity                    AS current_stock,
+    p.reorder_level,
+    CASE
+        WHEN i.stock_quantity = 0                THEN 'OUT OF STOCK'
+        WHEN i.stock_quantity < p.reorder_level  THEN 'LOW STOCK'
+        WHEN i.stock_quantity < p.reorder_level * 1.5 THEN 'WATCH'
+        ELSE                                          'HEALTHY'
+    END                                 AS stock_health,
+    ROUND(i.stock_quantity * p.unit_price, 2) AS inventory_value
+FROM products p
+LEFT JOIN sales     s ON p.product_id = s.product_id
+LEFT JOIN inventory i ON p.product_id = i.product_id
+GROUP BY p.product_id, p.product_name, p.category, p.unit,
+         i.stock_quantity, p.reorder_level, p.unit_price
+ORDER BY revenue_rank;
+
+-- Query 7 — Exception report (mismatches & anomalies)
+SELECT 
+    s.sale_id,
+    s.sale_date,
+    p.product_name,
+    s.buyer_name,
+    s.quantity_sold,
+    s.unit_price,
+    s.total_amount                              AS recorded_total,
+    ROUND(s.quantity_sold * s.unit_price, 2)    AS calculated_total,
+    ROUND(s.total_amount - 
+          (s.quantity_sold * s.unit_price), 2)  AS discrepancy
+FROM sales s
+JOIN products p ON s.product_id = p.product_id
+WHERE ABS(s.total_amount - (s.quantity_sold * s.unit_price)) > 0.01
+ORDER BY ABS(s.total_amount - (s.quantity_sold * s.unit_price)) DESC;
+
+-- If no mismatches found (our data is clean), test it by 
+-- manually inserting one bad row:
+INSERT INTO sales (product_id, sale_date, quantity_sold, unit_price, total_amount, buyer_name)
+VALUES (1, '2024-12-31', 100, 180.00, 19999.00, 'Test Buyer');
+-- Then re-run the query above — it will catch it.
+-- Clean up after testing:
+DELETE FROM sales WHERE buyer_name = 'Test Buyer';

@@ -1,0 +1,134 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.report{max-width:720px;margin:0 auto;padding:2rem 1.5rem}
+.cover{border-bottom:2px solid var(--color-border-secondary);padding-bottom:2rem;margin-bottom:2rem}
+.cover-tag{font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--color-text-tertiary);margin-bottom:.75rem}
+.cover-title{font-size:26px;font-weight:500;color:var(--color-text-primary);line-height:1.3;margin-bottom:.5rem}
+.cover-sub{font-size:15px;color:var(--color-text-secondary);margin-bottom:1.5rem}
+.meta-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.meta-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:.75rem 1rem}
+.meta-label{font-size:11px;color:var(--color-text-tertiary);margin-bottom:3px}
+.meta-val{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+.section{margin-bottom:2rem}
+.sec-title{font-size:17px;font-weight:500;color:var(--color-text-primary);margin-bottom:1rem;padding-bottom:.4rem;border-bottom:.5px solid var(--color-border-tertiary)}
+.sec-body{font-size:13px;color:var(--color-text-secondary);line-height:1.8}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:1rem 0}
+.kpi{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:.75rem;text-align:center}
+.kpi-num{font-size:20px;font-weight:500;color:var(--color-text-primary)}
+.kpi-lbl{font-size:11px;color:var(--color-text-tertiary);margin-top:2px}
+table{width:100%;border-collapse:collapse;font-size:12px;margin:1rem 0}
+th{background:var(--color-background-secondary);font-weight:500;font-size:11px;text-align:left;padding:8px 10px;color:var(--color-text-secondary);border-bottom:.5px solid var(--color-border-secondary)}
+td{padding:8px 10px;border-bottom:.5px solid var(--color-border-tertiary);color:var(--color-text-primary)}
+tr:last-child td{border-bottom:none}
+.tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:4px;margin:2px}
+.finding{background:var(--color-background-primary);border:.5px solid var(--color-border-tertiary);border-left:3px solid #1D9E75;border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;padding:.75rem 1rem;margin:.6rem 0;font-size:13px;color:var(--color-text-secondary);line-height:1.7}
+.alert-row{display:flex;align-items:center;gap:8px;background:var(--color-background-danger);border-radius:var(--border-radius-md);padding:.6rem 1rem;margin:.4rem 0;font-size:12px;color:var(--color-text-danger)}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.rec{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:.75rem 1rem;margin:.5rem 0;font-size:13px;color:var(--color-text-secondary);display:flex;gap:10px;align-items:flex-start}
+.rec-num{width:22px;height:22px;border-radius:50%;background:#E1F5EE;color:#0F6E56;font-size:11px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.skill-wrap{display:flex;flex-wrap:wrap;gap:6px;margin-top:.75rem}
+.footer{border-top:.5px solid var(--color-border-tertiary);padding-top:1.5rem;margin-top:2rem;font-size:11px;color:var(--color-text-tertiary);text-align:center}
+</style>
+<div class="report">
+
+<div class="cover">
+  <p class="cover-tag">Data Analysis Project Report</p>
+  <h1 class="cover-title">Textile Inventory &amp; Sales Analysis<br>Using MySQL</h1>
+  <p class="cover-sub">A complete MIS database project simulating real-world operations of a Bangladeshi textile weaving company</p>
+  <div class="meta-grid">
+    <div class="meta-card"><p class="meta-label">Project type</p><p class="meta-val">SQL / MIS Analysis</p></div>
+    <div class="meta-card"><p class="meta-label">Data period</p><p class="meta-val">Jan – Dec 2024</p></div>
+    <div class="meta-card"><p class="meta-label">Tools used</p><p class="meta-val">MySQL, Excel, Power BI</p></div>
+  </div>
+</div>
+
+<div class="section">
+  <h2 class="sec-title">Project overview</h2>
+  <p class="sec-body">This project builds a fully functional relational database for a textile company, populated with one year of realistic operational data including seasonal festival patterns. Seven advanced SQL analyses were performed covering revenue trends, inventory health, supplier reconciliation, buyer behavior, and data quality validation — the core responsibilities of an MIS Executive role in the textile industry.</p>
+</div>
+
+<div class="section">
+  <h2 class="sec-title">Database summary</h2>
+  <div class="kpi-row">
+    <div class="kpi"><p class="kpi-num">4</p><p class="kpi-lbl">Tables</p></div>
+    <div class="kpi"><p class="kpi-num">5</p><p class="kpi-lbl">Suppliers</p></div>
+    <div class="kpi"><p class="kpi-num">12</p><p class="kpi-lbl">Products</p></div>
+    <div class="kpi"><p class="kpi-num">200+</p><p class="kpi-lbl">Sales records</p></div>
+  </div>
+  <table>
+    <thead><tr><th>Table</th><th>Purpose</th><th>Key columns</th></tr></thead>
+    <tbody>
+      <tr><td>suppliers</td><td>Vendor master data</td><td>supplier_id, supplier_name, city</td></tr>
+      <tr><td>products</td><td>Product catalogue with pricing</td><td>product_id, category, unit_price, reorder_level</td></tr>
+      <tr><td>inventory</td><td>Current warehouse stock levels</td><td>stock_quantity, warehouse_location</td></tr>
+      <tr><td>sales</td><td>All sales transactions 2024</td><td>sale_date, quantity_sold, total_amount, buyer_name</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="section">
+  <h2 class="sec-title">Key findings</h2>
+
+  <div class="finding">Eid ul-Fitr season (March–April) generated the highest monthly revenue of the year, with March alone recording nearly 3× the revenue of July — the slowest month.</div>
+  <div class="finding">Grey Fabric 120 GSM and Cotton Yarn 20/1 were consistently the top two revenue-generating products across all seasons, together accounting for over 45% of annual revenue.</div>
+  <div class="finding">Delta Fabrics and Star Fashion Ltd were the top two buyers, contributing approximately 40% of total annual sales between them.</div>
+  <div class="finding">Winter peak (November–December) showed stronger sustained revenue than the Eid ul-Adha period, driven by heavy fabric and yarn demand for cold-weather garments.</div>
+  <div class="finding">Summer slowdown (July–August) saw transaction volume drop by approximately 65% compared to peak months — a critical planning window for stock replenishment.</div>
+
+  <p style="font-size:13px;font-weight:500;color:var(--color-text-primary);margin:1.2rem 0 .5rem">Active low stock alerts</p>
+  <div class="alert-row"><div class="dot" style="background:#E24B4A"></div>Viscose Yarn 40/1 — stock 290, reorder level 300 (shortage: 10 KG)</div>
+  <div class="alert-row"><div class="dot" style="background:#E24B4A"></div>Reactive Dye Red — stock 95, reorder level 100 (shortage: 5 KG)</div>
+  <div class="alert-row"><div class="dot" style="background:#E24B4A"></div>Vat Dye Black — stock 50, reorder level 80 (shortage: 30 KG)</div>
+  <div class="alert-row"><div class="dot" style="background:#E24B4A"></div>Shuttle (Wooden) — stock 430, reorder level 500 (shortage: 70 pieces)</div>
+</div>
+
+<div class="section">
+  <h2 class="sec-title">SQL analyses performed</h2>
+  <table>
+    <thead><tr><th>#</th><th>Analysis</th><th>SQL concepts used</th><th>Business purpose</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Monthly revenue trend</td><td>GROUP BY, MONTHNAME</td><td>Management reporting</td></tr>
+      <tr><td>2</td><td>Seasonal comparison</td><td>CASE WHEN, aggregation</td><td>Festival planning</td></tr>
+      <tr><td>3</td><td>Low stock alert</td><td>JOIN, WHERE filter</td><td>Inventory operations</td></tr>
+      <tr><td>4</td><td>Top selling products</td><td>JOIN, ORDER BY, AVG</td><td>Product strategy</td></tr>
+      <tr><td>5</td><td>Top buyers report</td><td>GROUP BY, MIN/MAX dates</td><td>Sales management</td></tr>
+      <tr><td>6</td><td>Month-over-month growth</td><td>CTE, self JOIN, growth %</td><td>Performance tracking</td></tr>
+      <tr><td>7</td><td>Slow-moving items</td><td>LEFT JOIN, HAVING, DATEDIFF</td><td>Warehouse management</td></tr>
+      <tr><td>8</td><td>Supplier reconciliation</td><td>3-table JOIN, subquery</td><td>Procurement review</td></tr>
+      <tr><td>9</td><td>Product scorecard</td><td>RANK() OVER, CASE WHEN</td><td>Weekly MIS report</td></tr>
+      <tr><td>10</td><td>Data exception report</td><td>ABS(), validation logic</td><td>Data quality control</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="section">
+  <h2 class="sec-title">Recommendations</h2>
+  <div class="rec"><div class="rec-num">1</div><div>Increase Vat Dye Black and Reactive Dye Red stock before the next Eid season — both are currently below reorder level and demand peaks sharply in March.</div></div>
+  <div class="rec"><div class="rec-num">2</div><div>Use the July–August slowdown period to run a clearance on slow-moving accessories (Weaving Needle Sets, Bobbins) and reduce warehousing cost.</div></div>
+  <div class="rec"><div class="rec-num">3</div><div>Diversify buyer base — over-reliance on two buyers (Delta Fabrics, Star Fashion Ltd) creates revenue risk if either reduces orders.</div></div>
+  <div class="rec"><div class="rec-num">4</div><div>Automate the low stock alert query to run every Monday morning and send results to the procurement team via email export.</div></div>
+</div>
+
+<div class="section">
+  <h2 class="sec-title">Skills demonstrated</h2>
+  <div class="skill-wrap">
+    <span class="tag" style="background:#E1F5EE;color:#0F6E56">MySQL</span>
+    <span class="tag" style="background:#E1F5EE;color:#0F6E56">Relational database design</span>
+    <span class="tag" style="background:#EEEDFE;color:#534AB7">CTE (WITH clause)</span>
+    <span class="tag" style="background:#EEEDFE;color:#534AB7">Window functions RANK()</span>
+    <span class="tag" style="background:#EEEDFE;color:#534AB7">Multi-table JOINs</span>
+    <span class="tag" style="background:#FAEEDA;color:#854F0B">MIS reporting</span>
+    <span class="tag" style="background:#FAEEDA;color:#854F0B">Inventory analysis</span>
+    <span class="tag" style="background:#FAEEDA;color:#854F0B">Seasonal trend analysis</span>
+    <span class="tag" style="background:#E6F1FB;color:#185FA5">Data reconciliation</span>
+    <span class="tag" style="background:#E6F1FB;color:#185FA5">Exception/anomaly detection</span>
+    <span class="tag" style="background:#FAECE7;color:#993C1D">Subqueries</span>
+    <span class="tag" style="background:#FAECE7;color:#993C1D">Data validation</span>
+  </div>
+</div>
+
+<div class="footer">Textile Inventory &amp; Sales SQL Analysis Project &nbsp;|&nbsp; github.com/yourusername/textile-mis-sql &nbsp;|&nbsp; 2024</div>
+
+</div>
