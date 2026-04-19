@@ -1,4 +1,3 @@
-# Inventory_Sales_Analysis-2024-
 # Textile Inventory & Sales Analysis — MySQL
 
 ## Overview
